@@ -73,4 +73,17 @@ const newsService = (function() {
 //  init selects
 document.addEventListener('DOMContentLoaded', function() {
   M.AutoInit();
+  loadNews()
 });
+
+//Load news function 
+
+function loadNews () {
+  newsService.topHeadLines('ua', onGetResponce)
+}
+
+// Function on get responce from server
+
+function onGetResponce(err, res) {
+  console.log(res)
+}
