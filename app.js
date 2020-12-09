@@ -61,11 +61,11 @@ const newsService = (function() {
   const apiUrl = 'https://news-api-v2.herokuapp.com'
 
   return {
-    topHeadLines(country = 'ua', cb){
-      http.get{`${apiUrl}/top-headlines?country=${country}&apiKey=${apiKey}`,cb}
+    topHeadLines(country = 'rus', cb){
+      http.get(`${apiUrl}/top-headlines?country=${country}&apiKey=${apiKey}`,cb);
     },
     everything(query, cb){
-      http.get{`${apiUrl}/everything?q=${query}&apiKey=${apiKey}`,cb}
+      http.get(`${apiUrl}/everything?q=${query}&apiKey=${apiKey}`,cb);
     }
   }
 })()
@@ -79,11 +79,46 @@ document.addEventListener('DOMContentLoaded', function() {
 //Load news function 
 
 function loadNews () {
-  newsService.topHeadLines('ua', onGetResponce)
+  newsService.topHeadLines('ru', onGetResponce)
 }
 
 // Function on get responce from server
 
 function onGetResponce(err, res) {
   console.log(res)
+  renderNews(res.articles)
+}
+
+//function render news 
+
+function renderNews(news) {
+  const newsContainer = document.querySelector('.news-container .row')
+  let fragment = ''
+  news.forEach(newsItem => {
+    const el = newsTemplate(newsItem)
+    fragment += el
+  })
+
+  newsContainer.insertAdjacentHTML('afterbegin', fragment)
+}
+
+// News item template function
+
+function newsTemplate({urlToImage, title, url, description}) {
+  return `
+  <div class='col s12'>
+    <div class='card'>
+      <div class='card-image'>
+        <img src='${urlToImage}'>
+        <span class='card-title'>${title || ''}</span>
+      </div>
+      <div class='card-content'>
+        <p>${description || ''}</p>
+      </div>
+      <div class='card-action'>
+        <a href='${url}'>Read more</a>
+      </div>
+    </div>
+  </div>
+  `
 }
