@@ -57,68 +57,135 @@ function customHttp() {
 const http = customHttp();
 
 const newsService = (function() {
-  const apiKey = '71d73b372df44736a4b8ba35ab94ddad'
-  const apiUrl = 'https://news-api-v2.herokuapp.com'
+  const apiKey = '71d73b372df44736a4b8ba35ab94ddad';
+  const apiUrl = 'https://news-api-v2.herokuapp.com';
 
   return {
-    topHeadLines(country = 'rus', cb){
-      http.get(`${apiUrl}/top-headlines?country=${country}&apiKey=${apiKey}`,cb);
+    topHeadlines(country = 'rus', cb) {
+      http.get(
+        `${apiUrl}/top-headlines?country=${country}&category=technology&apiKey=${apiKey}`,
+        cb,
+      );
     },
-    everything(query, cb){
-      http.get(`${apiUrl}/everything?q=${query}&apiKey=${apiKey}`,cb);
-    }
-  }
-})()
+    everything(query, cb) {
+      http.get(`${apiUrl}/everything?q=${query}&apiKey=${apiKey}`, cb);
+    },
+  };
+})();
+
+// Elements
+const form = document.forms['newsControls'];
+const countrySelect = form.elements['country'];
+const searchInput = form.elements['search'];
+
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  loadNews();
+});
 
 //  init selects
 document.addEventListener('DOMContentLoaded', function() {
   M.AutoInit();
-  loadNews()
+  loadNews();
 });
 
-//Load news function 
+// Load news function
+function loadNews() {
+  showLoader();
 
-function loadNews () {
-  newsService.topHeadLines('ru', onGetResponce)
+  const country = countrySelect.value;
+  const searchText = searchInput.value;
+
+  if (!searchText) {
+    newsService.topHeadlines(country, onGetResponse);
+  } else {
+    newsService.everything(searchText, onGetResponse);
+  }
 }
 
-// Function on get responce from server
+// Function on get response from server
+function onGetResponse(err, res) {
+  removePreloader();
 
-function onGetResponce(err, res) {
-  console.log(res)
-  renderNews(res.articles)
+  if (err) {
+    showAlert(err, 'error-msg');
+    return;
+  }
+
+  if (!res.articles.length) {
+    // show empty message
+    return;
+  }
+
+  renderNews(res.articles);
 }
 
-//function render news 
-
+// Function render news
 function renderNews(news) {
-  const newsContainer = document.querySelector('.news-container .row')
-  let fragment = ''
-  news.forEach(newsItem => {
-    const el = newsTemplate(newsItem)
-    fragment += el
-  })
+  const newsContainer = document.querySelector('.news-container .row');
+  if (newsContainer.children.length) {
+    clearContainer(newsContainer);
+  }
+  let fragment = '';
 
-  newsContainer.insertAdjacentHTML('afterbegin', fragment)
+  news.forEach(newsItem => {
+    const el = newsTemplate(newsItem);
+    fragment += el;
+  });
+
+  newsContainer.insertAdjacentHTML('afterbegin', fragment);
+}
+
+// Function clear container
+function clearContainer(container) {
+  // container.innerHTML = '';
+  let child = container.lastElementChild;
+  while (child) {
+    container.removeChild(child);
+    child = container.lastElementChild;
+  }
 }
 
 // News item template function
-
-function newsTemplate({urlToImage, title, url, description}) {
+function newsTemplate({ urlToImage, title, url, description }) {
   return `
-  <div class='col s12'>
-    <div class='card'>
-      <div class='card-image'>
-        <img src='${urlToImage}'>
-        <span class='card-title'>${title || ''}</span>
-      </div>
-      <div class='card-content'>
-        <p>${description || ''}</p>
-      </div>
-      <div class='card-action'>
-        <a href='${url}'>Read more</a>
+    <div class="col s12">
+      <div class="card">
+        <div class="card-image">
+          <img src="${urlToImage}">
+          <span class="card-title">${title || ''}</span>
+        </div>
+        <div class="card-content">
+          <p>${description || ''}</p>
+        </div>
+        <div class="card-action">
+          <a href="${url}">Read more</a>
+        </div>
       </div>
     </div>
-  </div>
-  `
+  `;
+}
+
+function showAlert(msg, type = 'success') {
+  M.toast({ html: msg, classes: type });
+}
+
+//  Show loader function
+function showLoader() {
+  document.body.insertAdjacentHTML(
+    'afterbegin',
+    `
+    <div class="progress">
+      <div class="indeterminate"></div>
+    </div>
+  `,
+  );
+}
+
+// Remove loader function
+function removePreloader() {
+  const loader = document.querySelector('.progress');
+  if (loader) {
+    loader.remove();
+  }
 }
