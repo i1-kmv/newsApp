@@ -11,7 +11,9 @@
 }
 
 .news-container .grid-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-flow: dense;
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  flex-wrap: wrap;
+ 
 }

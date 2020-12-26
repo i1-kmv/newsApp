@@ -61,7 +61,7 @@ const newsService = (function() {
   const apiUrl = 'https://news-api-v2.herokuapp.com';
 
   return {
-    topHeadlines(country = 'rus', cb) {
+    topHeadlines(country = 'us', cb) {
       http.get(
         `${apiUrl}/top-headlines?country=${country}&category=technology&apiKey=${apiKey}`,
         cb,
@@ -95,6 +95,13 @@ function loadNews() {
 
   const country = countrySelect.value;
   const searchText = searchInput.value;
+  if (country == 'Ukraine') {
+    return country = 'ua'
+  } if (country == 'Russian') {
+    return country = 'ru'
+  } if (country == 'Unated Syayes') {
+    return country = 'us'
+  }
 
   if (!searchText) {
     newsService.topHeadlines(country, onGetResponse);
